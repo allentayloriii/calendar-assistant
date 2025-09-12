@@ -191,7 +191,12 @@ export function EnhancedNaturalLanguageInput({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={(e) => {
+          void handleSubmit(e);
+        }}
+        className="space-y-4"
+      >
         <div className="flex space-x-2">
           <input
             type="text"

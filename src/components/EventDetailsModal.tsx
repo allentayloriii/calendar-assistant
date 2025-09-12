@@ -4,27 +4,37 @@ import { EventClickArg } from "@fullcalendar/core";
 interface EventDetailsModalProps {
   event: EventClickArg;
   onClose: () => void;
-  onUpdate: (eventId: string, updates: {
-    title?: string;
-    startISO?: string;
-    endISO?: string;
-    description?: string;
-  }) => void;
+  onUpdate: (
+    eventId: string,
+    updates: {
+      title?: string;
+      startISO?: string;
+      endISO?: string;
+      description?: string;
+    }
+  ) => void;
   onDelete: (eventId: string) => void;
 }
 
-export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventDetailsModalProps) {
+export function EventDetailsModal({
+  event,
+  onClose,
+  onUpdate,
+  onDelete,
+}: EventDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(event.event.title);
-  const [description, setDescription] = useState(event.event.extendedProps?.description || "");
+  const [description, setDescription] = useState(
+    event.event.extendedProps?.description || ""
+  );
   const [startDate, setStartDate] = useState(
-    event.event.start?.toISOString().split('T')[0] || ""
+    event.event.start?.toISOString().split("T")[0] || ""
   );
   const [startTime, setStartTime] = useState(
     event.event.start?.toTimeString().slice(0, 5) || ""
   );
   const [endDate, setEndDate] = useState(
-    event.event.end?.toISOString().split('T')[0] || ""
+    event.event.end?.toISOString().split("T")[0] || ""
   );
   const [endTime, setEndTime] = useState(
     event.event.end?.toTimeString().slice(0, 5) || ""
@@ -32,7 +42,8 @@ export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventD
 
   const handleUpdate = () => {
     const startDateTime = new Date(`${startDate}T${startTime}`);
-    const endDateTime = endDate && endTime ? new Date(`${endDate}T${endTime}`) : undefined;
+    const endDateTime =
+      endDate && endTime ? new Date(`${endDate}T${endTime}`) : undefined;
 
     onUpdate(event.event.id, {
       title,
@@ -49,21 +60,21 @@ export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventD
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">
             {isEditing ? "Edit Event" : "Event Details"}
           </h3>
           <div className="flex space-x-2">
-            {!isEditing && (
+            {/* {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="text-blue-600 hover:text-blue-800 text-sm"
+                className="text-sm text-blue-600 hover:text-blue-800"
               >
                 Edit
               </button>
-            )}
+            )} */}
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700"
@@ -76,7 +87,7 @@ export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventD
         {isEditing ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block mb-1 text-sm font-medium text-gray-700">
                 Title *
               </label>
               <input
@@ -89,7 +100,7 @@ export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventD
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block mb-1 text-sm font-medium text-gray-700">
                 Description
               </label>
               <textarea
@@ -102,7 +113,7 @@ export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventD
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block mb-1 text-sm font-medium text-gray-700">
                   Start Date
                 </label>
                 <input
@@ -113,7 +124,7 @@ export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventD
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block mb-1 text-sm font-medium text-gray-700">
                   Start Time
                 </label>
                 <input
@@ -127,7 +138,7 @@ export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventD
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block mb-1 text-sm font-medium text-gray-700">
                   End Date
                 </label>
                 <input
@@ -138,7 +149,7 @@ export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventD
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block mb-1 text-sm font-medium text-gray-700">
                   End Time
                 </label>
                 <input
@@ -153,20 +164,20 @@ export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventD
             <div className="flex justify-between pt-4">
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="px-4 py-2 text-white transition-colors bg-red-600 rounded-md hover:bg-red-700"
               >
                 Delete
               </button>
               <div className="flex space-x-3">
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 text-gray-700 transition-colors bg-gray-200 rounded-md hover:bg-gray-300"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleUpdate}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700"
                 >
                   Save Changes
                 </button>
@@ -176,18 +187,24 @@ export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventD
         ) : (
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Title</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Title
+              </label>
               <p className="text-gray-900">{event.event.title}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Start</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Start
+              </label>
               <p className="text-gray-900">
                 {event.event.start?.toLocaleString()}
               </p>
             </div>
             {event.event.end && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">End</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  End
+                </label>
                 <p className="text-gray-900">
                   {event.event.end.toLocaleString()}
                 </p>
@@ -195,7 +212,9 @@ export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventD
             )}
             {event.event.extendedProps?.description && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">Description</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Description
+                </label>
                 <p className="text-gray-900">
                   {event.event.extendedProps.description}
                 </p>
@@ -203,9 +222,13 @@ export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventD
             )}
             {event.event.extendedProps?.createdAt && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">Created</label>
-                <p className="text-gray-600 text-sm">
-                  {new Date(event.event.extendedProps.createdAt).toLocaleString()}
+                <label className="block text-sm font-medium text-gray-700">
+                  Created
+                </label>
+                <p className="text-sm text-gray-600">
+                  {new Date(
+                    event.event.extendedProps.createdAt
+                  ).toLocaleString()}
                 </p>
               </div>
             )}
@@ -213,13 +236,13 @@ export function EventDetailsModal({ event, onClose, onUpdate, onDelete }: EventD
             <div className="flex justify-between pt-4">
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="px-4 py-2 text-white transition-colors bg-red-600 rounded-md hover:bg-red-700"
               >
                 Delete
               </button>
               <button
                 onClick={() => setIsEditing(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700"
               >
                 Edit
               </button>
