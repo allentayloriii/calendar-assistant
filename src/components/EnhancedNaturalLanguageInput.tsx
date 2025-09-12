@@ -164,7 +164,7 @@ export function EnhancedNaturalLanguageInput({
   return (
     <div className="p-4 bg-white border rounded-lg shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">AI Task Assistant</h3>
+        {/* <h3 className="text-lg font-semibold">AI Task Assistant</h3> */}
         {conversationHistory.length > 0 && (
           <button
             onClick={clearHistory}

@@ -52,7 +52,7 @@ Respond with JSON only:
         model: "gpt-4.1-nano",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: args.text }
+          { role: "user", content: args.text },
         ],
         temperature: 0.1,
       });
@@ -70,41 +70,55 @@ Respond with JSON only:
           intent: "UNKNOWN",
           confidence: 0.0,
           parameters: {},
-          response: "I'm not sure what you want to do. Could you please rephrase your request?"
+          response:
+            "I'm not sure what you want to do. Could you please rephrase your request?",
         };
       }
-
     } catch (error) {
       console.error("NLP processing error:", error);
-      
+
       // Simple fallback processing
       const text = args.text.toLowerCase();
-      
-      if (text.includes("create") || text.includes("add") || text.includes("schedule")) {
+
+      if (
+        text.includes("create") ||
+        text.includes("add") ||
+        text.includes("schedule")
+      ) {
         return {
           intent: "CREATE_TASK",
           confidence: 0.5,
           parameters: {
             title: args.text,
-            date: new Date().toISOString().split('T')[0],
+            date: new Date().toISOString().split("T")[0],
           },
-          response: "I'll help you create a task. Please provide more details if needed."
+          response:
+            "I'll help you create a task. Please provide more details if needed.",
         };
-      } else if (text.includes("find") || text.includes("show") || text.includes("search")) {
+      } else if (
+        text.includes("find") ||
+        text.includes("show") ||
+        text.includes("search") ||
+        text.includes("list") ||
+        text.includes("what") ||
+        text.includes("when") ||
+        text.includes("do i have")
+      ) {
         return {
           intent: "QUERY_TASKS",
           confidence: 0.5,
           parameters: {
             query: args.text,
           },
-          response: "Let me search for your tasks."
+          response: "Let me search for your tasks.",
         };
       } else {
         return {
           intent: "UNKNOWN",
           confidence: 0.0,
           parameters: {},
-          response: "I'm not sure what you want to do. Try saying something like 'Create a meeting tomorrow at 2pm' or 'Show me my tasks for today'."
+          response:
+            "I'm not sure what you want to do. Try saying something like 'Create a meeting tomorrow at 2pm' or 'Show me my tasks for today'.",
         };
       }
     }
