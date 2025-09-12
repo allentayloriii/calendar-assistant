@@ -162,8 +162,8 @@ export function EnhancedNaturalLanguageInput({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-4">
-      <div className="flex justify-between items-center mb-4">
+    <div className="p-4 bg-white border rounded-lg shadow-sm">
+      <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">AI Task Assistant</h3>
         {conversationHistory.length > 0 && (
           <button
@@ -177,13 +177,13 @@ export function EnhancedNaturalLanguageInput({
 
       {/* Conversation History */}
       {conversationHistory.length > 0 && (
-        <div className="mb-4 space-y-2 max-h-40 overflow-y-auto">
+        <div className="mb-4 space-y-2 overflow-y-auto max-h-40">
           {conversationHistory.map((interaction, index) => (
             <div key={index} className="text-sm">
-              <div className="text-blue-600 font-medium">
+              <div className="font-medium text-blue-600">
                 You: {interaction.user}
               </div>
-              <div className="text-gray-700 ml-4">
+              <div className="ml-4 text-gray-700">
                 Assistant: {interaction.assistant}
               </div>
             </div>
@@ -204,7 +204,7 @@ export function EnhancedNaturalLanguageInput({
           <button
             type="submit"
             disabled={!input.trim() || isProcessing}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isProcessing ? "Processing..." : "Send"}
           </button>
@@ -212,14 +212,14 @@ export function EnhancedNaturalLanguageInput({
       </form>
 
       {lastResponse && (
-        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+        <div className="p-3 mt-4 border border-blue-200 rounded-md bg-blue-50">
           <p className="text-blue-800">{lastResponse}</p>
         </div>
       )}
 
       {/* <div className="mt-4 text-sm text-gray-600">
         <p className="font-medium">Example commands:</p>
-        <ul className="list-disc list-inside space-y-1 mt-2">
+        <ul className="mt-2 space-y-1 list-disc list-inside">
           <li>"Create a meeting tomorrow at 2pm for 1 hour"</li>
           <li>"Schedule dentist appointment next Friday at 10am"</li>
           <li>"Show me my tasks for today"</li>
