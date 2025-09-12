@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQuery, useAction } from "convex/react";
+import { useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
 
@@ -25,6 +25,7 @@ export function EnhancedNaturalLanguageInput({
 
   const processNaturalLanguage = useAction(api.nlp.processNaturalLanguage);
   const createEvent = useMutation(api.events.createEvent);
+  // We'll use useQuery dynamically inside handleQueryTasks
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,11 +145,60 @@ export function EnhancedNaturalLanguageInput({
 
   const handleQueryTasks = async (parameters: any) => {
     try {
-      // For now, just show a message that we're searching
-      // The actual search will be handled by the parent component
       setLastResponse("Searching for your tasks...");
 
-      // Trigger a search in the parent component
+      // Build query args from NLP parameters
+      let rangeStartISO: string | undefined;
+      let rangeEndISO: string | undefined;
+      if (parameters.dateRange) {
+        const now = new Date();
+        switch (parameters.dateRange) {
+          case "today": {
+            rangeStartISO = now.toISOString().split("T")[0];
+            rangeEndISO = rangeStartISO;
+            break;
+          }
+          case "tomorrow": {
+            const tomorrow = new Date(now);
+            tomorrow.setDate(now.getDate() + 1);
+            rangeStartISO = tomorrow.toISOString().split("T")[0];
+            rangeEndISO = rangeStartISO;
+            break;
+          }
+          case "this week": {
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            rangeStartISO = startOfWeek.toISOString().split("T")[0];
+            rangeEndISO = endOfWeek.toISOString().split("T")[0];
+            break;
+          }
+          case "next week": {
+            const nextWeekStart = new Date(now);
+            nextWeekStart.setDate(now.getDate() - now.getDay() + 7);
+            const nextWeekEnd = new Date(nextWeekStart);
+            nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
+            rangeStartISO = nextWeekStart.toISOString().split("T")[0];
+            rangeEndISO = nextWeekEnd.toISOString().split("T")[0];
+            break;
+          }
+          default: {
+            rangeStartISO = parameters.dateRange;
+            rangeEndISO = parameters.dateRange;
+          }
+        }
+      }
+
+      // Use useQuery to fetch events
+      // This must be done outside of render, so we use a dynamic import
+      const { listEvents } = await import("../../convex/_generated/api");
+      // Simulate useQuery with a direct fetch (if you have a client fetcher)
+      // Otherwise, you may need to move this logic up to a parent or use a custom hook
+      // For now, fallback to parent-provided queryResults or show a message
+      setLastResponse(
+        "Task querying requires a client fetcher for Convex queries. Please use the calendar view for now."
+      );
       onQueryResults([]);
     } catch (error) {
       console.error("Error querying tasks:", error);

@@ -14,6 +14,76 @@ import { EventDetailsModal } from "./EventDetailsModal";
 import { toast } from "sonner";
 
 export function TaskCalendar() {
+  // Query tasks based on NLP parameters
+  const queryTasks = (parameters: any) => {
+    let rangeStartISO: string | undefined;
+    let rangeEndISO: string | undefined;
+    if (parameters.dateRange) {
+      const now = new Date();
+      switch (parameters.dateRange) {
+        case "today": {
+          rangeStartISO = now.toISOString().split("T")[0];
+          rangeEndISO = rangeStartISO;
+          break;
+        }
+        case "tomorrow": {
+          const tomorrow = new Date(now);
+          tomorrow.setDate(now.getDate() + 1);
+          rangeStartISO = tomorrow.toISOString().split("T")[0];
+          rangeEndISO = rangeStartISO;
+          break;
+        }
+        case "this week": {
+          const startOfWeek = new Date(now);
+          startOfWeek.setDate(now.getDate() - now.getDay());
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 6);
+          rangeStartISO = startOfWeek.toISOString().split("T")[0];
+          rangeEndISO = endOfWeek.toISOString().split("T")[0];
+          break;
+        }
+        case "next week": {
+          const nextWeekStart = new Date(now);
+          nextWeekStart.setDate(now.getDate() - now.getDay() + 7);
+          const nextWeekEnd = new Date(nextWeekStart);
+          nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
+          rangeStartISO = nextWeekStart.toISOString().split("T")[0];
+          rangeEndISO = nextWeekEnd.toISOString().split("T")[0];
+          break;
+        }
+        default: {
+          rangeStartISO = parameters.dateRange;
+          rangeEndISO = parameters.dateRange;
+        }
+      }
+    }
+
+    // Fetch events using useQuery
+    const filteredEvents = (events || []).filter((event) => {
+      // Use event.end if available, otherwise event.start
+      const eventEnd = event.end || event.start;
+      const eventStart = event.start;
+      // Date filtering
+      if (rangeStartISO && eventEnd < rangeStartISO) return false;
+      if (rangeEndISO && eventStart > rangeEndISO) return false;
+      // Query string filtering
+      if (parameters.query) {
+        const queryLower = parameters.query.toLowerCase();
+        if (
+          !event.title.toLowerCase().includes(queryLower) &&
+          !(
+            event.description &&
+            event.description.toLowerCase().includes(queryLower)
+          )
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+    setQueryResults(filteredEvents);
+    return filteredEvents;
+  };
   const [selectedDate, setSelectedDate] = useState<DateSelectArg | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<EventClickArg | null>(
     null
@@ -141,7 +211,7 @@ export function TaskCalendar() {
     <div className="space-y-6">
       {/* Enhanced Natural Language Input */}
       <EnhancedNaturalLanguageInput
-        onQueryResults={handleQueryResults}
+        onQueryResults={queryTasks}
         onEventCreated={handleEventCreatedFromNL}
       />
 
