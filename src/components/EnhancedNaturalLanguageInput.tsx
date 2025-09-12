@@ -8,15 +8,20 @@ interface EnhancedNaturalLanguageInputProps {
   onEventCreated: () => void;
 }
 
-export function EnhancedNaturalLanguageInput({ onQueryResults, onEventCreated }: EnhancedNaturalLanguageInputProps) {
+export function EnhancedNaturalLanguageInput({
+  onQueryResults,
+  onEventCreated,
+}: EnhancedNaturalLanguageInputProps) {
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastResponse, setLastResponse] = useState<string>("");
-  const [conversationHistory, setConversationHistory] = useState<Array<{
-    user: string;
-    assistant: string;
-    timestamp: Date;
-  }>>([]);
+  const [conversationHistory, setConversationHistory] = useState<
+    Array<{
+      user: string;
+      assistant: string;
+      timestamp: Date;
+    }>
+  >([]);
 
   const processNaturalLanguage = useAction(api.nlp.processNaturalLanguage);
   const createEvent = useMutation(api.events.createEvent);
@@ -39,37 +44,50 @@ export function EnhancedNaturalLanguageInput({ onQueryResults, onEventCreated }:
 
       // Handle different intents
       switch (nlpResult.intent) {
-        case 'CREATE_TASK':
+        case "CREATE_TASK":
           await handleCreateTask(nlpResult.parameters, userInput);
           break;
 
-        case 'QUERY_TASKS':
+        case "QUERY_TASKS":
           await handleQueryTasks(nlpResult.parameters);
           break;
 
-        case 'UPDATE_TASK':
-          setLastResponse("Task updating is not yet implemented. Please create a new task or search for existing ones.");
+        case "UPDATE_TASK":
+          setLastResponse(
+            "Task updating is not yet implemented. Please create a new task or search for existing ones."
+          );
           break;
 
-        case 'DELETE_TASK':
-          setLastResponse("Task deletion is not yet implemented. Please use the calendar interface to manage tasks.");
+        case "DELETE_TASK":
+          setLastResponse(
+            "Task deletion is not yet implemented. Please use the calendar interface to manage tasks."
+          );
           break;
 
         default:
-          setLastResponse(nlpResult.response || "I'm not sure what you want to do. Try asking me to create a task or search for existing ones.");
+          setLastResponse(
+            nlpResult.response ||
+              "I'm not sure what you want to do. Try asking me to create a task or search for existing ones."
+          );
           break;
       }
 
       // Add to conversation history
-      setConversationHistory(prev => [...prev, {
-        user: userInput,
-        assistant: nlpResult.response || lastResponse,
-        timestamp: new Date()
-      }].slice(-5)); // Keep last 5 interactions
-
+      setConversationHistory((prev) =>
+        [
+          ...prev,
+          {
+            user: userInput,
+            assistant: nlpResult.response || lastResponse,
+            timestamp: new Date(),
+          },
+        ].slice(-5)
+      ); // Keep last 5 interactions
     } catch (error) {
       console.error("Error processing natural language input:", error);
-      setLastResponse("Sorry, I encountered an error processing your request. Please try again.");
+      setLastResponse(
+        "Sorry, I encountered an error processing your request. Please try again."
+      );
       toast.error("Failed to process your request");
     } finally {
       setIsProcessing(false);
@@ -88,32 +106,39 @@ export function EnhancedNaturalLanguageInput({ onQueryResults, onEventCreated }:
 
       // Parse time
       if (parameters.time) {
-        const [hours, minutes] = parameters.time.split(':');
-        startDate.setHours(parseInt(hours), parseInt(minutes || '0'));
+        const [hours, minutes] = parameters.time.split(":");
+        startDate.setHours(parseInt(hours), parseInt(minutes || "0"));
       }
 
       // Calculate end time if duration is provided
       let endDate: Date | undefined;
       if (parameters.duration) {
         endDate = new Date(startDate);
-        endDate.setMinutes(endDate.getMinutes() + parseInt(parameters.duration));
+        endDate.setMinutes(
+          endDate.getMinutes() + parseInt(parameters.duration)
+        );
       }
 
       await createEvent({
         title,
         startISO: startDate.toISOString(),
         endISO: endDate?.toISOString(),
-        description: parameters.description || `Created via natural language: "${originalInput}"`,
+        description:
+          parameters.description ||
+          `Created via natural language: "${originalInput}"`,
       });
 
       onEventCreated();
       toast.success(`Created task: ${title}`);
-      setLastResponse(`Successfully created "${title}" for ${startDate.toLocaleDateString()} at ${startDate.toLocaleTimeString()}.`);
-
+      setLastResponse(
+        `Successfully created "${title}" for ${startDate.toLocaleDateString()} at ${startDate.toLocaleTimeString()}.`
+      );
     } catch (error) {
       console.error("Error creating task:", error);
       toast.error("Failed to create task");
-      setLastResponse("Sorry, I couldn't create the task. Please try again with more specific details.");
+      setLastResponse(
+        "Sorry, I couldn't create the task. Please try again with more specific details."
+      );
     }
   };
 
@@ -122,10 +147,9 @@ export function EnhancedNaturalLanguageInput({ onQueryResults, onEventCreated }:
       // For now, just show a message that we're searching
       // The actual search will be handled by the parent component
       setLastResponse("Searching for your tasks...");
-      
+
       // Trigger a search in the parent component
       onQueryResults([]);
-
     } catch (error) {
       console.error("Error querying tasks:", error);
       setLastResponse("Sorry, I couldn't search for tasks. Please try again.");
@@ -150,14 +174,18 @@ export function EnhancedNaturalLanguageInput({ onQueryResults, onEventCreated }:
           </button>
         )}
       </div>
-      
+
       {/* Conversation History */}
       {conversationHistory.length > 0 && (
         <div className="mb-4 space-y-2 max-h-40 overflow-y-auto">
           {conversationHistory.map((interaction, index) => (
             <div key={index} className="text-sm">
-              <div className="text-blue-600 font-medium">You: {interaction.user}</div>
-              <div className="text-gray-700 ml-4">Assistant: {interaction.assistant}</div>
+              <div className="text-blue-600 font-medium">
+                You: {interaction.user}
+              </div>
+              <div className="text-gray-700 ml-4">
+                Assistant: {interaction.assistant}
+              </div>
             </div>
           ))}
         </div>
@@ -189,7 +217,7 @@ export function EnhancedNaturalLanguageInput({ onQueryResults, onEventCreated }:
         </div>
       )}
 
-      <div className="mt-4 text-sm text-gray-600">
+      {/* <div className="mt-4 text-sm text-gray-600">
         <p className="font-medium">Example commands:</p>
         <ul className="list-disc list-inside space-y-1 mt-2">
           <li>"Create a meeting tomorrow at 2pm for 1 hour"</li>
@@ -199,7 +227,7 @@ export function EnhancedNaturalLanguageInput({ onQueryResults, onEventCreated }:
           <li>"What do I have tomorrow morning?"</li>
           <li>"Create a workout session at 6am daily"</li>
         </ul>
-      </div>
+      </div> */}
     </div>
   );
 }
