@@ -5,6 +5,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import multiMonthPlugin from "@fullcalendar/multimonth";
 import { EventInput, DateSelectArg, EventClickArg } from "@fullcalendar/core";
 import { CreateEventModal } from "./CreateEventModal";
 import { EnhancedNaturalLanguageInput } from "./EnhancedNaturalLanguageInput";
@@ -14,19 +15,23 @@ import { toast } from "sonner";
 
 export function TaskCalendar() {
   const [selectedDate, setSelectedDate] = useState<DateSelectArg | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<EventClickArg | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventClickArg | null>(
+    null
+  );
   const [queryResults, setQueryResults] = useState<any[]>([]);
-  const [calendarView, setCalendarView] = useState<'month' | 'week' | 'day'>('month');
-  
+  const [calendarView, setCalendarView] = useState<
+    "multiMonth" | "month" | "week" | "day"
+  >("month");
+
   const calendarRef = useRef<FullCalendar>(null);
-  
+
   const events = useQuery(api.events.listEvents, {});
   const createEvent = useMutation(api.events.createEvent);
   const updateEvent = useMutation(api.events.updateEvent);
   const deleteEvent = useMutation(api.events.deleteEvent);
 
   // Convert Convex events to FullCalendar format
-  const calendarEvents: EventInput[] = (events || []).map(event => ({
+  const calendarEvents: EventInput[] = (events || []).map((event) => ({
     id: event._id,
     title: event.title,
     start: event.start,
@@ -62,12 +67,15 @@ export function TaskCalendar() {
     }
   };
 
-  const handleUpdateEvent = async (eventId: string, updates: {
-    title?: string;
-    startISO?: string;
-    endISO?: string;
-    description?: string;
-  }) => {
+  const handleUpdateEvent = async (
+    eventId: string,
+    updates: {
+      title?: string;
+      startISO?: string;
+      endISO?: string;
+      description?: string;
+    }
+  ) => {
     try {
       await updateEvent({
         eventId: eventId as any,
@@ -105,19 +113,25 @@ export function TaskCalendar() {
     }
   };
 
-  const handleViewChange = (view: 'month' | 'week' | 'day') => {
+  const handleViewChange = (view: "month" | "week" | "day" | "multiMonth") => {
     setCalendarView(view);
     if (calendarRef.current) {
       const calendarApi = calendarRef.current.getApi();
       switch (view) {
-        case 'month':
-          calendarApi.changeView('dayGridMonth');
+        case "multiMonth":
+          calendarApi.changeView("multiMonthYear");
           break;
-        case 'week':
-          calendarApi.changeView('timeGridWeek');
+        case "month":
+          calendarApi.changeView("dayGridMonth");
           break;
-        case 'day':
-          calendarApi.changeView('timeGridDay');
+        case "week":
+          calendarApi.changeView("timeGridWeek");
+          break;
+        case "day":
+          calendarApi.changeView("timeGridDay");
+          break;
+        default:
+          calendarApi.changeView("dayGridMonth");
           break;
       }
     }
@@ -126,50 +140,60 @@ export function TaskCalendar() {
   return (
     <div className="space-y-6">
       {/* Enhanced Natural Language Input */}
-      <EnhancedNaturalLanguageInput 
+      <EnhancedNaturalLanguageInput
         onQueryResults={handleQueryResults}
         onEventCreated={handleEventCreatedFromNL}
       />
 
       {/* Query Results */}
       {queryResults.length > 0 && (
-        <QueryResults 
-          results={queryResults} 
+        <QueryResults
+          results={queryResults}
           onClear={() => setQueryResults([])}
         />
       )}
 
       {/* Calendar Controls */}
-      <div className="bg-white rounded-lg shadow-sm border p-4">
-        <div className="flex justify-between items-center mb-4">
+      <div className="p-4 bg-white border rounded-lg shadow-sm">
+        <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Calendar View</h3>
           <div className="flex space-x-2">
             <button
-              onClick={() => handleViewChange('month')}
+              onClick={() => handleViewChange("multiMonth")}
               className={`px-3 py-1 rounded text-sm ${
-                calendarView === 'month' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                calendarView === "multiMonth"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              Multi-Month
+            </button>
+            <button
+              onClick={() => handleViewChange("month")}
+              className={`px-3 py-1 rounded text-sm ${
+                calendarView === "month"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
               Month
             </button>
             <button
-              onClick={() => handleViewChange('week')}
+              onClick={() => handleViewChange("week")}
               className={`px-3 py-1 rounded text-sm ${
-                calendarView === 'week' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                calendarView === "week"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
               Week
             </button>
             <button
-              onClick={() => handleViewChange('day')}
+              onClick={() => handleViewChange("day")}
               className={`px-3 py-1 rounded text-sm ${
-                calendarView === 'day' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                calendarView === "day"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
               Day
@@ -179,11 +203,16 @@ export function TaskCalendar() {
 
         <FullCalendar
           ref={calendarRef}
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+          plugins={[
+            dayGridPlugin,
+            timeGridPlugin,
+            interactionPlugin,
+            multiMonthPlugin,
+          ]}
           headerToolbar={{
-            left: 'prev,next today',
-            center: 'title',
-            right: '' // We handle view switching with our custom buttons
+            left: "prev,next today",
+            center: "title",
+            right: "", // We handle view switching with our custom buttons
           }}
           initialView="dayGridMonth"
           editable={true}
@@ -210,7 +239,9 @@ export function TaskCalendar() {
         <CreateEventModal
           selectInfo={selectedDate}
           onClose={() => setSelectedDate(null)}
-          onCreateEvent={handleCreateEvent}
+          onCreateEvent={(eventData) => {
+            void handleCreateEvent(eventData);
+          }}
         />
       )}
 
@@ -219,8 +250,12 @@ export function TaskCalendar() {
         <EventDetailsModal
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
-          onUpdate={handleUpdateEvent}
-          onDelete={handleDeleteEvent}
+          onUpdate={(eventId, updates) => {
+            void handleUpdateEvent(eventId, updates);
+          }}
+          onDelete={(eventId) => {
+            void handleDeleteEvent(eventId);
+          }}
         />
       )}
     </div>
