@@ -128,6 +128,7 @@ export function TaskCalendar() {
     description?: string;
   }) => {
     try {
+      console.log(`Creating event with data:`, JSON.stringify(eventData));
       await createEvent(eventData);
       setSelectedDate(null);
       toast.success("Event created successfully!");
@@ -172,10 +173,6 @@ export function TaskCalendar() {
     }
   };
 
-  const handleQueryResults = (results: any[]) => {
-    setQueryResults(results);
-  };
-
   const handleEventCreatedFromNL = () => {
     // Refresh calendar after event creation from natural language
     if (calendarRef.current) {
@@ -209,21 +206,7 @@ export function TaskCalendar() {
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Natural Language Input */}
-      <EnhancedNaturalLanguageInput
-        onQueryResults={queryTasks}
-        onEventCreated={handleEventCreatedFromNL}
-      />
-
-      {/* Query Results */}
-      {queryResults.length > 0 && (
-        <QueryResults
-          results={queryResults}
-          onClear={() => setQueryResults([])}
-        />
-      )}
-
-      {/* Calendar Controls */}
+      {/* Calendar Controls and Calendar */}
       <div className="p-4 bg-white border rounded-lg shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Calendar View</h3>
@@ -326,6 +309,20 @@ export function TaskCalendar() {
           onDelete={(eventId) => {
             void handleDeleteEvent(eventId);
           }}
+        />
+      )}
+
+      {/* Enhanced Natural Language Input */}
+      <EnhancedNaturalLanguageInput
+        onQueryResults={queryTasks}
+        onEventCreated={handleEventCreatedFromNL}
+      />
+
+      {/* Query Results */}
+      {queryResults.length > 0 && (
+        <QueryResults
+          results={queryResults}
+          onClear={() => setQueryResults([])}
         />
       )}
     </div>

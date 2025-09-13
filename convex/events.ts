@@ -9,9 +9,9 @@ export const listEvents = query({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    
+
     let events;
-    
+
     if (userId) {
       events = await ctx.db
         .query("events")
@@ -20,13 +20,13 @@ export const listEvents = query({
     } else {
       events = await ctx.db.query("events").collect();
     }
-    
+
     // Filter by date range if provided
     if (args.rangeStartISO || args.rangeEndISO) {
-      return events.filter(event => {
+      return events.filter((event) => {
         const eventStart = new Date(event.start);
         const eventEnd = event.end ? new Date(event.end) : eventStart;
-        
+
         if (args.rangeStartISO && eventEnd < new Date(args.rangeStartISO)) {
           return false;
         }
@@ -36,7 +36,7 @@ export const listEvents = query({
         return true;
       });
     }
-    
+
     return events;
   },
 });
@@ -47,11 +47,11 @@ export const queryEventsByText = query({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    
+
     if (!args.queryText.trim()) {
       return [];
     }
-    
+
     const searchResults = await ctx.db
       .query("events")
       .withSearchIndex("search_events", (q) => {
@@ -62,7 +62,7 @@ export const queryEventsByText = query({
         return query;
       })
       .take(20);
-    
+
     return searchResults;
   },
 });
@@ -78,17 +78,23 @@ export const queryEventsByDateRange = query({
     let endDate: Date;
 
     switch (args.dateRange) {
-      case "today":
+      case "today": {
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         endDate = new Date(startDate);
         endDate.setDate(endDate.getDate() + 1);
         break;
-      case "tomorrow":
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      }
+      case "tomorrow": {
+        startDate = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() + 1
+        );
         endDate = new Date(startDate);
         endDate.setDate(endDate.getDate() + 1);
         break;
-      case "this_week":
+      }
+      case "this_week": {
         const dayOfWeek = now.getDay();
         startDate = new Date(now);
         startDate.setDate(now.getDate() - dayOfWeek);
@@ -96,7 +102,8 @@ export const queryEventsByDateRange = query({
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 7);
         break;
-      case "next_week":
+      }
+      case "next_week": {
         const nextWeekStart = new Date(now);
         nextWeekStart.setDate(now.getDate() + (7 - now.getDay()));
         nextWeekStart.setHours(0, 0, 0, 0);
@@ -104,8 +111,10 @@ export const queryEventsByDateRange = query({
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 7);
         break;
-      default:
+      }
+      default: {
         return [];
+      }
     }
 
     let events;
@@ -118,7 +127,7 @@ export const queryEventsByDateRange = query({
       events = await ctx.db.query("events").collect();
     }
 
-    return events.filter(event => {
+    return events.filter((event) => {
       const eventStart = new Date(event.start);
       return eventStart >= startDate && eventStart < endDate;
     });
@@ -134,7 +143,7 @@ export const createEvent = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    
+
     const eventId = await ctx.db.insert("events", {
       title: args.title,
       start: args.startISO,
@@ -143,7 +152,7 @@ export const createEvent = mutation({
       createdBy: userId || undefined,
       createdAt: new Date().toISOString(),
     });
-    
+
     return eventId;
   },
 });
@@ -159,21 +168,21 @@ export const updateEvent = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     const event = await ctx.db.get(args.eventId);
-    
+
     if (!event) {
       throw new Error("Event not found");
     }
-    
+
     if (userId && event.createdBy !== userId) {
       throw new Error("Not authorized to update this event");
     }
-    
+
     const updates: any = {};
     if (args.title !== undefined) updates.title = args.title;
     if (args.startISO !== undefined) updates.start = args.startISO;
     if (args.endISO !== undefined) updates.end = args.endISO;
     if (args.description !== undefined) updates.description = args.description;
-    
+
     await ctx.db.patch(args.eventId, updates);
     return args.eventId;
   },
@@ -186,15 +195,15 @@ export const deleteEvent = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     const event = await ctx.db.get(args.eventId);
-    
+
     if (!event) {
       throw new Error("Event not found");
     }
-    
+
     if (userId && event.createdBy !== userId) {
       throw new Error("Not authorized to delete this event");
     }
-    
+
     await ctx.db.delete(args.eventId);
     return args.eventId;
   },

@@ -4,12 +4,11 @@ import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
 
 interface EnhancedNaturalLanguageInputProps {
-  onQueryResults: (results: any[]) => void;
+  // ...existing code...
   onEventCreated: () => void;
 }
 
 export function EnhancedNaturalLanguageInput({
-  onQueryResults,
   onEventCreated,
 }: EnhancedNaturalLanguageInputProps) {
   const [input, setInput] = useState("");
@@ -25,7 +24,7 @@ export function EnhancedNaturalLanguageInput({
 
   const processNaturalLanguage = useAction(api.nlp.processNaturalLanguage);
   const createEvent = useMutation(api.events.createEvent);
-  // We'll use useQuery dynamically inside handleQueryTasks
+  // ...existing code...
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +49,7 @@ export function EnhancedNaturalLanguageInput({
           break;
 
         case "QUERY_TASKS":
-          await handleQueryTasks(nlpResult.parameters);
+          setLastResponse("Task querying is handled by the calendar view.");
           break;
 
         case "UPDATE_TASK":
@@ -102,13 +101,28 @@ export function EnhancedNaturalLanguageInput({
 
       // Parse date
       if (parameters.date) {
-        startDate = new Date(parameters.date);
+        // If only a date is provided (YYYY-MM-DD), set local time to now or to 00:00
+        const dateParts = parameters.date.split("-");
+        if (dateParts.length === 3) {
+          // Use local time for today
+          const today = new Date();
+          startDate = new Date(
+            Number(dateParts[0]),
+            Number(dateParts[1]) - 1,
+            Number(dateParts[2]),
+            today.getHours(),
+            today.getMinutes(),
+            today.getSeconds()
+          );
+        } else {
+          startDate = new Date(parameters.date);
+        }
       }
 
       // Parse time
       if (parameters.time) {
         const [hours, minutes] = parameters.time.split(":");
-        startDate.setHours(parseInt(hours), parseInt(minutes || "0"));
+        startDate.setHours(parseInt(hours), parseInt(minutes || "0"), 0, 0);
       }
 
       // Calculate end time if duration is provided
@@ -140,69 +154,6 @@ export function EnhancedNaturalLanguageInput({
       setLastResponse(
         "Sorry, I couldn't create the task. Please try again with more specific details."
       );
-    }
-  };
-
-  const handleQueryTasks = async (parameters: any) => {
-    try {
-      setLastResponse("Searching for your tasks...");
-
-      // Build query args from NLP parameters
-      let rangeStartISO: string | undefined;
-      let rangeEndISO: string | undefined;
-      if (parameters.dateRange) {
-        const now = new Date();
-        switch (parameters.dateRange) {
-          case "today": {
-            rangeStartISO = now.toISOString().split("T")[0];
-            rangeEndISO = rangeStartISO;
-            break;
-          }
-          case "tomorrow": {
-            const tomorrow = new Date(now);
-            tomorrow.setDate(now.getDate() + 1);
-            rangeStartISO = tomorrow.toISOString().split("T")[0];
-            rangeEndISO = rangeStartISO;
-            break;
-          }
-          case "this week": {
-            const startOfWeek = new Date(now);
-            startOfWeek.setDate(now.getDate() - now.getDay());
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6);
-            rangeStartISO = startOfWeek.toISOString().split("T")[0];
-            rangeEndISO = endOfWeek.toISOString().split("T")[0];
-            break;
-          }
-          case "next week": {
-            const nextWeekStart = new Date(now);
-            nextWeekStart.setDate(now.getDate() - now.getDay() + 7);
-            const nextWeekEnd = new Date(nextWeekStart);
-            nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
-            rangeStartISO = nextWeekStart.toISOString().split("T")[0];
-            rangeEndISO = nextWeekEnd.toISOString().split("T")[0];
-            break;
-          }
-          default: {
-            rangeStartISO = parameters.dateRange;
-            rangeEndISO = parameters.dateRange;
-          }
-        }
-      }
-
-      // Use useQuery to fetch events
-      // This must be done outside of render, so we use a dynamic import
-      const { listEvents } = await import("../../convex/_generated/api");
-      // Simulate useQuery with a direct fetch (if you have a client fetcher)
-      // Otherwise, you may need to move this logic up to a parent or use a custom hook
-      // For now, fallback to parent-provided queryResults or show a message
-      setLastResponse(
-        "Task querying requires a client fetcher for Convex queries. Please use the calendar view for now."
-      );
-      onQueryResults([]);
-    } catch (error) {
-      console.error("Error querying tasks:", error);
-      setLastResponse("Sorry, I couldn't search for tasks. Please try again.");
     }
   };
 
