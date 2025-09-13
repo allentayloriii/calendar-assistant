@@ -312,11 +312,26 @@ export function TaskCalendar() {
         />
       )}
 
-      {/* Enhanced Natural Language Input */}
-      <EnhancedNaturalLanguageInput
-        onQueryResults={queryTasks}
-        onEventCreated={handleEventCreatedFromNL}
-      />
+      {/* Enhanced Natural Language Input - floating at bottom */}
+      <div
+        style={{
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: 32,
+          zIndex: 50,
+          display: "flex",
+          justifyContent: "center",
+          pointerEvents: "none",
+        }}
+      >
+        <div style={{ pointerEvents: "auto", width: "100%", maxWidth: 480 }}>
+          <EnhancedNaturalLanguageInput
+            onQueryResults={queryTasks}
+            onEventCreated={handleEventCreatedFromNL}
+          />
+        </div>
+      </div>
 
       {/* Query Results */}
       {queryResults.length > 0 && (
