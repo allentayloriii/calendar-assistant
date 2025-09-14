@@ -59,13 +59,18 @@ Respond with JSON only:
         temperature: 0.1,
       });
 
+      console.log("NLP Response:", JSON.stringify(response, null, 2));
+
       const content = response.choices[0].message.content;
       if (!content) {
         throw new Error("No response from AI");
       }
 
+      console.log("NLP Content:", JSON.stringify(content, null, 2));
+
       try {
-        return JSON.parse(content);
+        const parsed = JSON.parse(content);
+        return parsed;
       } catch (parseError) {
         // Fallback if JSON parsing fails
         return {

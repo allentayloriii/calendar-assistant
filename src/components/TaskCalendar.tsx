@@ -38,7 +38,7 @@ export function TaskCalendar() {
   const deleteEvent = useMutation(api.events.deleteEvent);
 
   // Query tasks based on NLP parameters
-  const queryTasks = async (parameters: any): Promise<any[]> => {
+  const queryTasks = (parameters: any) => {
     let rangeStartISO: string | undefined;
     let rangeEndISO: string | undefined;
     if (parameters.dateRange) {
