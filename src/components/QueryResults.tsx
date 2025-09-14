@@ -3,7 +3,7 @@ interface QueryResultsProps {
   onClear: () => void;
 }
 
-export function QueryResults({ results, onClear }: QueryResultsProps) {
+export default function QueryResults({ results, onClear }: QueryResultsProps) {
   if (results.length === 0) return null;
 
   return (

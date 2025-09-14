@@ -1,18 +1,18 @@
-import { useState, Dispatch, SetStateAction } from "react";
-import { useMutation, useAction } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { useAction, useMutation } from "convex/react";
+import { Dispatch, FormEvent, SetStateAction, useState } from "react";
 import { toast } from "sonner";
+import { api } from "../../convex/_generated/api";
 import { ConversationEntry } from "./ConversationHistory";
 
 interface UserNLPInputProps {
-  onQueryResults: (parameters: any) => void;
+  onQueryResults: (parameters: any) => Promise<any[]>;
   onEventCreated: () => void;
   setConversationHistory: Dispatch<SetStateAction<ConversationEntry[]>>;
   setLastResponse: Dispatch<SetStateAction<string>>;
   lastResponse: string;
 }
 
-export function UserNLPInput({
+export default function UserNLPInput({
   onQueryResults,
   onEventCreated,
   setConversationHistory,
@@ -25,7 +25,7 @@ export function UserNLPInput({
   const processNaturalLanguage = useAction(api.nlp.processNaturalLanguage);
   const createEvent = useMutation(api.events.createEvent);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isProcessing) return;
 
@@ -48,8 +48,12 @@ export function UserNLPInput({
           break;
         }
         case "QUERY_TASKS": {
-          onQueryResults(nlpResult.parameters);
-          setLastResponse("No events found for your query.");
+          const results = await onQueryResults(nlpResult.parameters);
+          if (results && results.length > 0) {
+            setLastResponse(`Found ${results.length} event(s) for your query.`);
+          } else {
+            setLastResponse("No events found for your query.");
+          }
           break;
         }
 
@@ -75,23 +79,20 @@ export function UserNLPInput({
       }
 
       // Add to conversation history
-      setConversationHistory((prev) =>
-        [
-          ...prev,
-          {
-            user: userInput,
-            assistant: nlpResult.response || lastResponse,
-            timestamp: new Date(),
-          },
-        ].slice(-5)
-      ); // Keep last 5 interactions
-
-      // Scroll to just beyond the bottom of the FullCalendar component
+      setConversationHistory((prev) => [
+        ...prev,
+        {
+          user: userInput,
+          assistant: nlpResult.response || lastResponse,
+          timestamp: new Date(),
+        },
+      ]);
+      // Scroll to just beyond the bottom of the calendar after submit
       setTimeout(() => {
         const calendarEl = document.querySelector("#calendar-container");
         if (calendarEl) {
           const rect = calendarEl.getBoundingClientRect();
-          const scrollY = window.scrollY;
+          const scrollY = window.scrollY || window.pageYOffset;
           const targetY = rect.bottom + scrollY + 48;
           window.scrollTo({
             top: targetY,

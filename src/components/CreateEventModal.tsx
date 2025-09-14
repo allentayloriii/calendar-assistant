@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { DateSelectArg } from "@fullcalendar/core";
 
 interface CreateEventModalProps {
@@ -12,15 +12,19 @@ interface CreateEventModalProps {
   }) => void;
 }
 
-export function CreateEventModal({ selectInfo, onClose, onCreateEvent }: CreateEventModalProps) {
+export function CreateEventModal({
+  selectInfo,
+  onClose,
+  onCreateEvent,
+}: CreateEventModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!title.trim()) return;
 
     const startDate = selectInfo.start;
@@ -31,21 +35,21 @@ export function CreateEventModal({ selectInfo, onClose, onCreateEvent }: CreateE
 
     if (selectInfo.allDay) {
       // All day event
-      startISO = startDate.toISOString().split('T')[0];
+      startISO = startDate.toISOString().split("T")[0];
       if (endDate && endDate.getTime() !== startDate.getTime()) {
-        endISO = endDate.toISOString().split('T')[0];
+        endISO = endDate.toISOString().split("T")[0];
       }
     } else {
       // Timed event
       if (startTime) {
-        const [hours, minutes] = startTime.split(':');
+        const [hours, minutes] = startTime.split(":");
         startDate.setHours(parseInt(hours), parseInt(minutes));
       }
       startISO = startDate.toISOString();
 
       if (endTime) {
         const endDateTime = new Date(startDate);
-        const [hours, minutes] = endTime.split(':');
+        const [hours, minutes] = endTime.split(":");
         endDateTime.setHours(parseInt(hours), parseInt(minutes));
         endISO = endDateTime.toISOString();
       }
@@ -60,13 +64,16 @@ export function CreateEventModal({ selectInfo, onClose, onCreateEvent }: CreateE
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h3 className="text-lg font-semibold mb-4">Create New Event</h3>
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="w-full max-w-md p-6 mx-4 bg-white rounded-lg">
+        <h3 className="mb-4 text-lg font-semibold">Create New Event</h3>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="title"
+              className="block mb-1 text-sm font-medium text-gray-700"
+            >
               Title *
             </label>
             <input
@@ -81,7 +88,10 @@ export function CreateEventModal({ selectInfo, onClose, onCreateEvent }: CreateE
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="description"
+              className="block mb-1 text-sm font-medium text-gray-700"
+            >
               Description
             </label>
             <textarea
@@ -97,7 +107,10 @@ export function CreateEventModal({ selectInfo, onClose, onCreateEvent }: CreateE
           {!selectInfo.allDay && (
             <>
               <div>
-                <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="startTime"
+                  className="block mb-1 text-sm font-medium text-gray-700"
+                >
                   Start Time
                 </label>
                 <input
@@ -110,7 +123,10 @@ export function CreateEventModal({ selectInfo, onClose, onCreateEvent }: CreateE
               </div>
 
               <div>
-                <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="endTime"
+                  className="block mb-1 text-sm font-medium text-gray-700"
+                >
                   End Time
                 </label>
                 <input
@@ -129,21 +145,24 @@ export function CreateEventModal({ selectInfo, onClose, onCreateEvent }: CreateE
             {selectInfo.allDay ? (
               <p>All day event</p>
             ) : (
-              <p>Time slot: {selectInfo.start.toLocaleTimeString()} - {selectInfo.end.toLocaleTimeString()}</p>
+              <p>
+                Time slot: {selectInfo.start.toLocaleTimeString()} -{" "}
+                {selectInfo.end.toLocaleTimeString()}
+              </p>
             )}
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex justify-end pt-4 space-x-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+              className="px-4 py-2 text-gray-700 transition-colors bg-gray-200 rounded-md hover:bg-gray-300"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700"
             >
               Create Event
             </button>

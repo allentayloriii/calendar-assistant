@@ -8,11 +8,11 @@ import interactionPlugin from "@fullcalendar/interaction";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import { EventInput, DateSelectArg, EventClickArg } from "@fullcalendar/core";
 import { CreateEventModal } from "./CreateEventModal";
-import { UserNLPInput } from "./UserNLPInput";
-import { QueryResults } from "./QueryResults";
-import { EventDetailsModal } from "./EventDetailsModal";
+import UserNLPInput from "./UserNLPInput";
+import QueryResults from "./QueryResults";
+import EventDetailsModal from "./EventDetailsModal";
 import { toast } from "sonner";
-import { ConversationEntry, ConversationHistory } from "./ConversationHistory";
+import ConversationHistory, { ConversationEntry } from "./ConversationHistory";
 
 export function TaskCalendar() {
   const [selectedDate, setSelectedDate] = useState<DateSelectArg | null>(null);
@@ -37,7 +37,7 @@ export function TaskCalendar() {
   const deleteEvent = useMutation(api.events.deleteEvent);
 
   // Query tasks based on NLP parameters
-  const queryTasks = (parameters: any) => {
+  const queryTasks = async (parameters: any): Promise<any[]> => {
     let rangeStartISO: string | undefined;
     let rangeEndISO: string | undefined;
     if (parameters.dateRange) {
@@ -328,28 +328,8 @@ export function TaskCalendar() {
       )}
 
       {/* User NLP Input - floating at bottom */}
-      <div
-        style={{
-          position: "fixed",
-          left: 0,
-          right: 0,
-          bottom: 32,
-          zIndex: 50,
-          display: "flex",
-          justifyContent: "center",
-          pointerEvents: "none",
-        }}
-      >
-        <div
-          style={{
-            pointerEvents: "auto",
-            width: "100%",
-            maxWidth: 750,
-            boxShadow: "6px 12px 24px 0 rgba(0,0,0,0.18)",
-            borderRadius: 12,
-            background: "white",
-          }}
-        >
+      <div className="fixed left-0 right-0 z-50 flex justify-center pointer-events-none bottom-8">
+        <div className="w-full max-w-2xl bg-white shadow-2xl pointer-events-auto rounded-xl">
           <UserNLPInput
             onQueryResults={queryTasks}
             onEventCreated={handleEventCreatedFromNL}
@@ -360,20 +340,7 @@ export function TaskCalendar() {
         </div>
       </div>
 
-      <div
-        style={{
-          minHeight: 500,
-          overflowY: "auto",
-          background: "#f9fafb",
-          borderRadius: 12,
-          boxShadow: "0 2px 12px 0 rgba(0,0,0,0.08)",
-          marginTop: 24,
-          padding: 24,
-          display: "flex",
-          flexDirection: "column",
-          gap: 24,
-        }}
-      >
+      <div className="conversation-query-container min-h-[500px]">
         <ConversationHistory
           conversationHistory={conversationHistory}
           clearHistory={clearHistory}
