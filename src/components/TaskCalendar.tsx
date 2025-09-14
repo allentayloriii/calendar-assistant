@@ -341,7 +341,7 @@ export function TaskCalendar() {
       )}
 
       {/* User NLP Input - floating at bottom */}
-      <div className="fixed left-0 right-0 z-50 flex justify-center pointer-events-none bottom-8">
+      <div className="fixed left-0 right-0 z-50 flex justify-center pointer-events-none bottom-20">
         <div className="w-full max-w-2xl bg-white shadow-2xl pointer-events-auto rounded-xl">
           <UserNLPInput
             onQueryResults={(parameters) => {
