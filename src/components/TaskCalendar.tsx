@@ -1,18 +1,19 @@
-import { useState, useRef } from "react";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import FullCalendar from "@fullcalendar/react";
+import { DateSelectArg, EventClickArg, EventInput } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import multiMonthPlugin from "@fullcalendar/multimonth";
-import { EventInput, DateSelectArg, EventClickArg } from "@fullcalendar/core";
-import { CreateEventModal } from "./CreateEventModal";
-import UserNLPInput from "./UserNLPInput";
-import QueryResults from "./QueryResults";
-import EventDetailsModal from "./EventDetailsModal";
+import FullCalendar from "@fullcalendar/react";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import { useMutation, useQuery } from "convex/react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { api } from "../../convex/_generated/api";
 import ConversationHistory, { ConversationEntry } from "./ConversationHistory";
+import { CreateEventModal } from "./CreateEventModal";
+import EventDetailsModal from "./EventDetailsModal";
+import QueryResults from "./QueryResults";
+import UserNLPInput from "./UserNLPInput";
+import { TrashIcon } from "@heroicons/react/20/solid";
 
 export function TaskCalendar() {
   const [selectedDate, setSelectedDate] = useState<DateSelectArg | null>(null);
@@ -339,16 +340,29 @@ export function TaskCalendar() {
         <div className="flex-1 flex-direction-column gap-4 conversation-query-container min-h-[500px]">
           <ConversationHistory
             conversationHistory={conversationHistory}
-            clearHistory={() => {
-              setConversationHistory([]);
-              setLastResponse("");
-            }}
             lastResponse={lastResponse}
           />
           <QueryResults
             results={queryResults}
             onClear={() => setQueryResults([])}
           />
+          <div className="flex items-center justify-between mt-2">
+            {conversationHistory.length > 0 && (
+              <button
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  setTimeout(() => {
+                    setConversationHistory([]);
+                    setLastResponse("");
+                  }, 1000);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Clear History"
+              >
+                <TrashIcon className="w-5 h-5" />
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
