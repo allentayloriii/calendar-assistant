@@ -3,7 +3,7 @@
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 
-// Enhanced natural language processing with built-in OpenAI
+// User NLP processing with built-in OpenAI
 export const processNaturalLanguage = action({
   args: {
     text: v.string(),
@@ -26,6 +26,8 @@ Possible intents:
 4. DELETE_TASK - User wants to remove a task
 5. UNKNOWN - Intent is unclear
 
+When extracting date or dateRange parameters, always resolve relative words like "today", "tomorrow", "this week", "next week", "yesterday", etc. to their actual date values in YYYY-MM-DD format, using the current date as reference. For example, if the user says "today", set date to today's date in YYYY-MM-DD format. If the user says "tomorrow", set date to tomorrow's date in YYYY-MM-DD format. If the user says "this week", set dateRange to the start and end dates of the current week in YYYY-MM-DD format.
+
 For CREATE_TASK, extract:
 - title: The task title
 - date: Date in YYYY-MM-DD format (default to today if not specified)
@@ -35,7 +37,7 @@ For CREATE_TASK, extract:
 
 For QUERY_TASKS, extract:
 - query: Search terms
-- dateRange: "today", "tomorrow", "this week", "next week", or specific date
+- dateRange: Start and end dates in YYYY-MM-DD format (resolve relative words)
 - timeRange: "morning", "afternoon", "evening", or specific time
 
 Respond with JSON only:

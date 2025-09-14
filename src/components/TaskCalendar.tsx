@@ -8,14 +8,36 @@ import interactionPlugin from "@fullcalendar/interaction";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import { EventInput, DateSelectArg, EventClickArg } from "@fullcalendar/core";
 import { CreateEventModal } from "./CreateEventModal";
-import { EnhancedNaturalLanguageInput } from "./EnhancedNaturalLanguageInput";
-import { QueryResults } from "./QueryResults";
-import { EventDetailsModal } from "./EventDetailsModal";
+import UserNLPInput from "./UserNLPInput";
+import QueryResults from "./QueryResults";
+import EventDetailsModal from "./EventDetailsModal";
 import { toast } from "sonner";
+import ConversationHistory, { ConversationEntry } from "./ConversationHistory";
 
 export function TaskCalendar() {
+  const [selectedDate, setSelectedDate] = useState<DateSelectArg | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventClickArg | null>(
+    null
+  );
+  const [queryResults, setQueryResults] = useState<any[]>([]);
+  const [calendarView, setCalendarView] = useState<
+    "multiMonth" | "month" | "week" | "day"
+  >("month");
+
+  const [lastResponse, setLastResponse] = useState<string>("");
+  const [conversationHistory, setConversationHistory] = useState<
+    ConversationEntry[]
+  >([]);
+
+  const calendarRef = useRef<FullCalendar>(null);
+
+  const events = useQuery(api.events.listEvents, {});
+  const createEvent = useMutation(api.events.createEvent);
+  const updateEvent = useMutation(api.events.updateEvent);
+  const deleteEvent = useMutation(api.events.deleteEvent);
+
   // Query tasks based on NLP parameters
-  const queryTasks = (parameters: any) => {
+  const queryTasks = async (parameters: any): Promise<any[]> => {
     let rangeStartISO: string | undefined;
     let rangeEndISO: string | undefined;
     if (parameters.dateRange) {
@@ -84,21 +106,11 @@ export function TaskCalendar() {
     setQueryResults(filteredEvents);
     return filteredEvents;
   };
-  const [selectedDate, setSelectedDate] = useState<DateSelectArg | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<EventClickArg | null>(
-    null
-  );
-  const [queryResults, setQueryResults] = useState<any[]>([]);
-  const [calendarView, setCalendarView] = useState<
-    "multiMonth" | "month" | "week" | "day"
-  >("month");
 
-  const calendarRef = useRef<FullCalendar>(null);
-
-  const events = useQuery(api.events.listEvents, {});
-  const createEvent = useMutation(api.events.createEvent);
-  const updateEvent = useMutation(api.events.updateEvent);
-  const deleteEvent = useMutation(api.events.deleteEvent);
+  const clearHistory = () => {
+    setConversationHistory([]);
+    setLastResponse("");
+  };
 
   // Convert Convex events to FullCalendar format
   const calendarEvents: EventInput[] = (events || []).map((event) => ({
@@ -207,7 +219,10 @@ export function TaskCalendar() {
   return (
     <div className="space-y-6">
       {/* Calendar Controls and Calendar */}
-      <div className="p-4 bg-white border rounded-lg shadow-sm">
+      <div
+        id="calendar-container"
+        className="p-4 bg-white border rounded-lg shadow-sm"
+      >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Calendar View</h3>
           <div className="flex space-x-2">
@@ -312,34 +327,30 @@ export function TaskCalendar() {
         />
       )}
 
-      {/* Enhanced Natural Language Input - floating at bottom */}
-      <div
-        style={{
-          position: "fixed",
-          left: 0,
-          right: 0,
-          bottom: 32,
-          zIndex: 50,
-          display: "flex",
-          justifyContent: "center",
-          pointerEvents: "none",
-        }}
-      >
-        <div style={{ pointerEvents: "auto", width: "100%", maxWidth: 480 }}>
-          <EnhancedNaturalLanguageInput
+      {/* User NLP Input - floating at bottom */}
+      <div className="fixed left-0 right-0 z-50 flex justify-center pointer-events-none bottom-8">
+        <div className="w-full max-w-2xl bg-white shadow-2xl pointer-events-auto rounded-xl">
+          <UserNLPInput
             onQueryResults={queryTasks}
             onEventCreated={handleEventCreatedFromNL}
+            setConversationHistory={setConversationHistory}
+            setLastResponse={setLastResponse}
+            lastResponse={lastResponse}
           />
         </div>
       </div>
 
-      {/* Query Results */}
-      {queryResults.length > 0 && (
+      <div className="conversation-query-container min-h-[500px]">
+        <ConversationHistory
+          conversationHistory={conversationHistory}
+          clearHistory={clearHistory}
+          lastResponse={lastResponse}
+        />
         <QueryResults
           results={queryResults}
           onClear={() => setQueryResults([])}
         />
-      )}
+      </div>
     </div>
   );
 }
