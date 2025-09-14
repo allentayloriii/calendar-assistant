@@ -4,6 +4,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
+import { TrashIcon } from "@heroicons/react/20/solid";
 import { useMutation, useQuery } from "convex/react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -13,7 +14,6 @@ import { CreateEventModal } from "./CreateEventModal";
 import EventDetailsModal from "./EventDetailsModal";
 import QueryResults from "./QueryResults";
 import UserNLPInput from "./UserNLPInput";
-import { TrashIcon } from "@heroicons/react/20/solid";
 
 export function TaskCalendar() {
   const [selectedDate, setSelectedDate] = useState<DateSelectArg | null>(null);
@@ -24,6 +24,8 @@ export function TaskCalendar() {
   const [calendarView, setCalendarView] = useState<
     "multiMonth" | "month" | "week" | "day"
   >("month");
+
+  const [calendarBlurred, setCalendarBlurred] = useState(false);
 
   const [lastResponse, setLastResponse] = useState<string>("");
   const [conversationHistory, setConversationHistory] = useState<
@@ -217,8 +219,23 @@ export function TaskCalendar() {
       {/* Calendar Controls and Calendar */}
       <div
         id="calendar-container"
-        className="p-4 bg-white border rounded-lg shadow-sm"
+        className="relative p-4 bg-white border rounded-lg shadow-sm"
+        tabIndex={0}
       >
+        {calendarBlurred && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-white bg-opacity-70">
+            <button
+              className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 rounded shadow-lg"
+              onClick={() => {
+                setCalendarBlurred(false);
+                const el = document.getElementById("calendar-container");
+                if (el) el.focus();
+              }}
+            >
+              Back to Calendar
+            </button>
+          </div>
+        )}
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Calendar View</h3>
           <div className="flex space-x-2">
@@ -279,20 +296,20 @@ export function TaskCalendar() {
             right: "", // We handle view switching with our custom buttons
           }}
           initialView="dayGridMonth"
-          editable={true}
-          selectable={true}
-          selectMirror={true}
+          editable={!calendarBlurred}
+          selectable={!calendarBlurred}
+          selectMirror={!calendarBlurred}
           dayMaxEvents={true}
           weekends={true}
           events={calendarEvents}
-          select={handleDateSelect}
-          eventClick={handleEventClick}
+          select={calendarBlurred ? undefined : handleDateSelect}
+          eventClick={calendarBlurred ? undefined : handleEventClick}
           height="auto"
           eventDisplay="block"
           eventBackgroundColor="#3b82f6"
           eventBorderColor="#2563eb"
           eventTextColor="#ffffff"
-          nowIndicator={true}
+          nowIndicator={!calendarBlurred}
           slotMinTime="06:00:00"
           slotMaxTime="22:00:00"
         />
@@ -327,7 +344,10 @@ export function TaskCalendar() {
       <div className="fixed left-0 right-0 z-50 flex justify-center pointer-events-none bottom-8">
         <div className="w-full max-w-2xl bg-white shadow-2xl pointer-events-auto rounded-xl">
           <UserNLPInput
-            onQueryResults={queryTasks}
+            onQueryResults={(parameters) => {
+              setCalendarBlurred(true); // Blur calendar when NLP input is submitted
+              queryTasks(parameters);
+            }}
             onEventCreated={handleEventCreatedFromNL}
             setConversationHistory={setConversationHistory}
             setLastResponse={setLastResponse}
