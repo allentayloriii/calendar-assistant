@@ -1,13 +1,13 @@
 # Calendar Assistant
 
-An AI-powered calendar and task manager with natural language input, built using React, Convex, and FullCalendar. Easily create, search, and manage events and tasks with conversational commands.
+An AI-powered calendar and task manager with natural language input, built using React, Convex, and FullCalendar. Easily create, search, and manage events and tasks with conversational commands. All users are signed in anonymously—no authentication or login required. The app loads directly to the calendar for every user.
 
 ## Features
 
 - **Conversational AI**: Add, search, and manage tasks/events using natural language ("Show me my meetings next week", "Schedule a call tomorrow at 2pm")
 - **FullCalendar Integration**: Modern calendar UI with multi-month, month, week, and day views
 - **Real-Time Sync**: All changes update instantly for all users
-- **Authentication**: Secure login via Convex Auth
+- **Anonymous Access**: No login or signup—every user is anonymous
 - **Smart Event Creation**: AI parses dates, times, durations, and descriptions
 - **Advanced Search**: Filter by text, date, or time range
 - **Responsive UI**: Optimized for desktop and mobile
@@ -19,7 +19,6 @@ An AI-powered calendar and task manager with natural language input, built using
 - **Backend**: Convex (database, functions, real-time updates)
 - **Calendar**: FullCalendar
 - **AI/NLP**: OpenAI GPT-4.1-nano (Convex integration)
-- **Authentication**: Convex Auth
 - **UI**: Custom React components, Sonner for notifications
 
 ## Getting Started
@@ -56,7 +55,7 @@ An AI-powered calendar and task manager with natural language input, built using
    npm run dev
    ```
 
-The app will be available at [http://localhost:5173](http://localhost:5173).
+The app will be available at [http://localhost:5173](http://localhost:5173). All users are anonymous and taken directly to the calendar page.
 
 ## Natural Language Examples
 
@@ -101,7 +100,7 @@ convex/
 ├── events.ts                         # Event CRUD operations
 ├── nlp.ts                            # Natural language processing
 ├── schema.ts                         # Database schema
-├── auth.ts                           # Authentication setup
+├── auth.ts                           # (Legacy) Authentication setup — not used, all users are anonymous
 └── ...
 ```
 
@@ -143,6 +142,8 @@ Convex's built-in OpenAI integration works out of the box. For advanced features
 - `DIALOGFLOW_PRIVATE_KEY`: Dialogflow service account private key (optional)
 - `DIALOGFLOW_CLIENT_EMAIL`: Dialogflow service account email (optional)
 
+No authentication environment variables are required. All users are anonymous.
+
 ## Deployment
 
 1. Build the project:
@@ -158,6 +159,8 @@ Convex's built-in OpenAI integration works out of the box. For advanced features
    ```
 
 3. Deploy frontend to your preferred hosting (Vercel, Netlify, etc.)
+
+No authentication setup required for deployment.
 
 ## Contributing
 
