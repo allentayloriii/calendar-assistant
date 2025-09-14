@@ -8,12 +8,34 @@ import interactionPlugin from "@fullcalendar/interaction";
 import multiMonthPlugin from "@fullcalendar/multimonth";
 import { EventInput, DateSelectArg, EventClickArg } from "@fullcalendar/core";
 import { CreateEventModal } from "./CreateEventModal";
-import { EnhancedNaturalLanguageInput } from "./EnhancedNaturalLanguageInput";
+import { UserNLPInput } from "./UserNLPInput";
 import { QueryResults } from "./QueryResults";
 import { EventDetailsModal } from "./EventDetailsModal";
 import { toast } from "sonner";
+import { ConversationEntry, ConversationHistory } from "./ConversationHistory";
 
 export function TaskCalendar() {
+  const [selectedDate, setSelectedDate] = useState<DateSelectArg | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventClickArg | null>(
+    null
+  );
+  const [queryResults, setQueryResults] = useState<any[]>([]);
+  const [calendarView, setCalendarView] = useState<
+    "multiMonth" | "month" | "week" | "day"
+  >("month");
+
+  const [lastResponse, setLastResponse] = useState<string>("");
+  const [conversationHistory, setConversationHistory] = useState<
+    ConversationEntry[]
+  >([]);
+
+  const calendarRef = useRef<FullCalendar>(null);
+
+  const events = useQuery(api.events.listEvents, {});
+  const createEvent = useMutation(api.events.createEvent);
+  const updateEvent = useMutation(api.events.updateEvent);
+  const deleteEvent = useMutation(api.events.deleteEvent);
+
   // Query tasks based on NLP parameters
   const queryTasks = (parameters: any) => {
     let rangeStartISO: string | undefined;
@@ -84,21 +106,11 @@ export function TaskCalendar() {
     setQueryResults(filteredEvents);
     return filteredEvents;
   };
-  const [selectedDate, setSelectedDate] = useState<DateSelectArg | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<EventClickArg | null>(
-    null
-  );
-  const [queryResults, setQueryResults] = useState<any[]>([]);
-  const [calendarView, setCalendarView] = useState<
-    "multiMonth" | "month" | "week" | "day"
-  >("month");
 
-  const calendarRef = useRef<FullCalendar>(null);
-
-  const events = useQuery(api.events.listEvents, {});
-  const createEvent = useMutation(api.events.createEvent);
-  const updateEvent = useMutation(api.events.updateEvent);
-  const deleteEvent = useMutation(api.events.deleteEvent);
+  const clearHistory = () => {
+    setConversationHistory([]);
+    setLastResponse("");
+  };
 
   // Convert Convex events to FullCalendar format
   const calendarEvents: EventInput[] = (events || []).map((event) => ({
@@ -207,7 +219,10 @@ export function TaskCalendar() {
   return (
     <div className="space-y-6">
       {/* Calendar Controls and Calendar */}
-      <div className="p-4 bg-white border rounded-lg shadow-sm">
+      <div
+        id="calendar-container"
+        className="p-4 bg-white border rounded-lg shadow-sm"
+      >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Calendar View</h3>
           <div className="flex space-x-2">
@@ -312,7 +327,7 @@ export function TaskCalendar() {
         />
       )}
 
-      {/* Enhanced Natural Language Input - floating at bottom */}
+      {/* User NLP Input - floating at bottom */}
       <div
         style={{
           position: "fixed",
@@ -325,21 +340,50 @@ export function TaskCalendar() {
           pointerEvents: "none",
         }}
       >
-        <div style={{ pointerEvents: "auto", width: "100%", maxWidth: 480 }}>
-          <EnhancedNaturalLanguageInput
+        <div
+          style={{
+            pointerEvents: "auto",
+            width: "100%",
+            maxWidth: 750,
+            boxShadow: "6px 12px 24px 0 rgba(0,0,0,0.18)",
+            borderRadius: 12,
+            background: "white",
+          }}
+        >
+          <UserNLPInput
             onQueryResults={queryTasks}
             onEventCreated={handleEventCreatedFromNL}
+            setConversationHistory={setConversationHistory}
+            setLastResponse={setLastResponse}
+            lastResponse={lastResponse}
           />
         </div>
       </div>
 
-      {/* Query Results */}
-      {queryResults.length > 0 && (
+      <div
+        style={{
+          minHeight: 500,
+          overflowY: "auto",
+          background: "#f9fafb",
+          borderRadius: 12,
+          boxShadow: "0 2px 12px 0 rgba(0,0,0,0.08)",
+          marginTop: 24,
+          padding: 24,
+          display: "flex",
+          flexDirection: "column",
+          gap: 24,
+        }}
+      >
+        <ConversationHistory
+          conversationHistory={conversationHistory}
+          clearHistory={clearHistory}
+          lastResponse={lastResponse}
+        />
         <QueryResults
           results={queryResults}
           onClear={() => setQueryResults([])}
         />
-      )}
+      </div>
     </div>
   );
 }

@@ -1,30 +1,29 @@
-import { useState } from "react";
+import { useState, Dispatch, SetStateAction } from "react";
 import { useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
+import { ConversationEntry } from "./ConversationHistory";
 
-interface EnhancedNaturalLanguageInputProps {
-  // ...existing code...
+interface UserNLPInputProps {
+  onQueryResults: (parameters: any) => void;
   onEventCreated: () => void;
+  setConversationHistory: Dispatch<SetStateAction<ConversationEntry[]>>;
+  setLastResponse: Dispatch<SetStateAction<string>>;
+  lastResponse: string;
 }
 
-export function EnhancedNaturalLanguageInput({
+export function UserNLPInput({
+  onQueryResults,
   onEventCreated,
-}: EnhancedNaturalLanguageInputProps) {
+  setConversationHistory,
+  setLastResponse,
+  lastResponse,
+}: UserNLPInputProps) {
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [lastResponse, setLastResponse] = useState<string>("");
-  const [conversationHistory, setConversationHistory] = useState<
-    Array<{
-      user: string;
-      assistant: string;
-      timestamp: Date;
-    }>
-  >([]);
 
   const processNaturalLanguage = useAction(api.nlp.processNaturalLanguage);
   const createEvent = useMutation(api.events.createEvent);
-  // ...existing code...
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +34,7 @@ export function EnhancedNaturalLanguageInput({
     setInput("");
 
     try {
-      // Process with enhanced NLP
+      // Process with NLP
       const nlpResult = await processNaturalLanguage({
         text: userInput,
       });
@@ -44,32 +43,35 @@ export function EnhancedNaturalLanguageInput({
 
       // Handle different intents
       switch (nlpResult.intent) {
-        case "CREATE_TASK":
+        case "CREATE_TASK": {
           await handleCreateTask(nlpResult.parameters, userInput);
           break;
-
-        case "QUERY_TASKS":
-          setLastResponse("Task querying is handled by the calendar view.");
+        }
+        case "QUERY_TASKS": {
+          onQueryResults(nlpResult.parameters);
+          setLastResponse("No events found for your query.");
           break;
+        }
 
-        case "UPDATE_TASK":
+        case "UPDATE_TASK": {
           setLastResponse(
             "Task updating is not yet implemented. Please create a new task or search for existing ones."
           );
           break;
-
-        case "DELETE_TASK":
+        }
+        case "DELETE_TASK": {
           setLastResponse(
             "Task deletion is not yet implemented. Please use the calendar interface to manage tasks."
           );
           break;
-
-        default:
+        }
+        default: {
           setLastResponse(
             nlpResult.response ||
               "I'm not sure what you want to do. Try asking me to create a task or search for existing ones."
           );
           break;
+        }
       }
 
       // Add to conversation history
@@ -83,6 +85,20 @@ export function EnhancedNaturalLanguageInput({
           },
         ].slice(-5)
       ); // Keep last 5 interactions
+
+      // Scroll to just beyond the bottom of the FullCalendar component
+      setTimeout(() => {
+        const calendarEl = document.querySelector("#calendar-container");
+        if (calendarEl) {
+          const rect = calendarEl.getBoundingClientRect();
+          const scrollY = window.scrollY;
+          const targetY = rect.bottom + scrollY + 48;
+          window.scrollTo({
+            top: targetY,
+            behavior: "smooth",
+          });
+        }
+      }, 100);
     } catch (error) {
       console.error("Error processing natural language input:", error);
       setLastResponse(
@@ -157,41 +173,8 @@ export function EnhancedNaturalLanguageInput({
     }
   };
 
-  const clearHistory = () => {
-    setConversationHistory([]);
-    setLastResponse("");
-  };
-
   return (
     <div className="p-4 bg-white border rounded-lg shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        {/* <h3 className="text-lg font-semibold">AI Task Assistant</h3> */}
-        {conversationHistory.length > 0 && (
-          <button
-            onClick={clearHistory}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            Clear History
-          </button>
-        )}
-      </div>
-
-      {/* Conversation History */}
-      {conversationHistory.length > 0 && (
-        <div className="mb-4 space-y-2 overflow-y-auto max-h-40">
-          {conversationHistory.map((interaction, index) => (
-            <div key={index} className="text-sm">
-              <div className="font-medium text-blue-600">
-                You: {interaction.user}
-              </div>
-              <div className="ml-4 text-gray-700">
-                Assistant: {interaction.assistant}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
       <form
         onSubmit={(e) => {
           void handleSubmit(e);
@@ -203,7 +186,7 @@ export function EnhancedNaturalLanguageInput({
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Try: 'Create a meeting tomorrow at 2pm' or 'Show me my tasks for today'"
+            placeholder="Try: 'Show me my tasks for today'"
             className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             disabled={isProcessing}
           />
@@ -216,24 +199,6 @@ export function EnhancedNaturalLanguageInput({
           </button>
         </div>
       </form>
-
-      {lastResponse && (
-        <div className="p-3 mt-4 border border-blue-200 rounded-md bg-blue-50">
-          <p className="text-blue-800">{lastResponse}</p>
-        </div>
-      )}
-
-      {/* <div className="mt-4 text-sm text-gray-600">
-        <p className="font-medium">Example commands:</p>
-        <ul className="mt-2 space-y-1 list-disc list-inside">
-          <li>"Create a meeting tomorrow at 2pm for 1 hour"</li>
-          <li>"Schedule dentist appointment next Friday at 10am"</li>
-          <li>"Show me my tasks for today"</li>
-          <li>"Find all meetings this week"</li>
-          <li>"What do I have tomorrow morning?"</li>
-          <li>"Create a workout session at 6am daily"</li>
-        </ul>
-      </div> */}
     </div>
   );
 }
