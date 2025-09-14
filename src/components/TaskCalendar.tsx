@@ -107,11 +107,6 @@ export function TaskCalendar() {
     return filteredEvents;
   };
 
-  const clearHistory = () => {
-    setConversationHistory([]);
-    setLastResponse("");
-  };
-
   // Convert Convex events to FullCalendar format
   const calendarEvents: EventInput[] = (events || []).map((event) => ({
     id: event._id,
@@ -340,17 +335,22 @@ export function TaskCalendar() {
         </div>
       </div>
 
-      <div className="conversation-query-container min-h-[500px]">
-        <ConversationHistory
-          conversationHistory={conversationHistory}
-          clearHistory={clearHistory}
-          lastResponse={lastResponse}
-        />
-        <QueryResults
-          results={queryResults}
-          onClear={() => setQueryResults([])}
-        />
-      </div>
+      {(conversationHistory.length > 0 || queryResults.length > 0) && (
+        <div className="flex-1 flex-direction-column gap-4 conversation-query-container min-h-[500px]">
+          <ConversationHistory
+            conversationHistory={conversationHistory}
+            clearHistory={() => {
+              setConversationHistory([]);
+              setLastResponse("");
+            }}
+            lastResponse={lastResponse}
+          />
+          <QueryResults
+            results={queryResults}
+            onClear={() => setQueryResults([])}
+          />
+        </div>
+      )}
     </div>
   );
 }
