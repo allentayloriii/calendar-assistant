@@ -5,7 +5,7 @@ import { api } from "../../convex/_generated/api";
 import { ConversationEntry } from "./ConversationHistory";
 
 interface UserNLPInputProps {
-  onQueryResults: (parameters: any) => Promise<any[]>;
+  onQueryResults: (parameters: any) => void;
   onEventCreated: () => void;
   setConversationHistory: Dispatch<SetStateAction<ConversationEntry[]>>;
   setLastResponse: Dispatch<SetStateAction<string>>;
@@ -48,12 +48,8 @@ export default function UserNLPInput({
           break;
         }
         case "QUERY_TASKS": {
-          const results = await onQueryResults(nlpResult.parameters);
-          if (results && results.length > 0) {
-            setLastResponse(`Found ${results.length} event(s) for your query.`);
-          } else {
-            setLastResponse("No events found for your query.");
-          }
+          onQueryResults(nlpResult.parameters);
+
           break;
         }
 
