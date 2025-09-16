@@ -49,7 +49,10 @@ export default function UserNLPInput({
         }
         case "QUERY_TASKS": {
           onQueryResults(nlpResult.parameters);
-
+          setLastResponse(
+            nlpResult.response ||
+              "Here are the tasks matching your query. Check the calendar above."
+          );
           break;
         }
 
