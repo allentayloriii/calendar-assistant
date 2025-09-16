@@ -92,18 +92,18 @@ export function TaskCalendar() {
       if (rangeStartISO && eventEnd < rangeStartISO) return false;
       if (rangeEndISO && eventStart > rangeEndISO) return false;
       // Query string filtering
-      if (parameters.query) {
-        const queryLower = parameters.query.toLowerCase();
-        if (
-          !event.title.toLowerCase().includes(queryLower) &&
-          !(
-            event.description &&
-            event.description.toLowerCase().includes(queryLower)
-          )
-        ) {
-          return false;
-        }
-      }
+      // if (parameters.query) {
+      //   const queryLower = parameters.query.toLowerCase();
+      //   if (
+      //     !event.title.toLowerCase().includes(queryLower) &&
+      //     !(
+      //       event.description &&
+      //       event.description.toLowerCase().includes(queryLower)
+      //     )
+      //   ) {
+      //     return false;
+      //   }
+      // }
       return true;
     });
     setQueryResults(filteredEvents);
@@ -374,6 +374,8 @@ export function TaskCalendar() {
                   setTimeout(() => {
                     setConversationHistory([]);
                     setLastResponse("");
+                    setQueryResults([]);
+                    toast.success("Conversation history cleared");
                   }, 1000);
                 }}
                 className="text-gray-500 hover:text-gray-700"

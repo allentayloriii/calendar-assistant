@@ -14,8 +14,10 @@ export const processNaturalLanguage = action({
       const openai = await import("openai");
       const client = new openai.default({
         baseURL: process.env.CONVEX_OPENAI_BASE_URL,
-        // apiKey: process.env.CONVEX_OPENAI_API_KEY,
-        apiKey: process.env.OPENAI_API_KEY,
+        apiKey:
+          process.env.OPENAI_API_KEY ||
+          process.env.VITE_OPENAI_API_KEY ||
+          process.env.CONVEX_OPENAI_API_KEY,
       });
 
       const systemPrompt = `You are a task calendar assistant. Analyze the user's input and determine the intent and extract relevant parameters.
