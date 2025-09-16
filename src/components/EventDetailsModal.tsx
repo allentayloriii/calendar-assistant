@@ -67,14 +67,6 @@ export default function EventDetailsModal({
             {isEditing ? "Edit Event" : "Event Details"}
           </h3>
           <div className="flex space-x-2">
-            {/* {!isEditing && (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="text-sm text-blue-600 hover:text-blue-800"
-              >
-                Edit
-              </button>
-            )} */}
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700"
