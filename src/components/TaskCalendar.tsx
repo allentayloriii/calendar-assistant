@@ -91,19 +91,7 @@ export function TaskCalendar() {
       // Date filtering
       if (rangeStartISO && eventEnd < rangeStartISO) return false;
       if (rangeEndISO && eventStart > rangeEndISO) return false;
-      // Query string filtering
-      // if (parameters.query) {
-      //   const queryLower = parameters.query.toLowerCase();
-      //   if (
-      //     !event.title.toLowerCase().includes(queryLower) &&
-      //     !(
-      //       event.description &&
-      //       event.description.toLowerCase().includes(queryLower)
-      //     )
-      //   ) {
-      //     return false;
-      //   }
-      // }
+
       return true;
     });
     setQueryResults(filteredEvents);
@@ -219,7 +207,11 @@ export function TaskCalendar() {
       {/* Calendar Controls and Calendar */}
       <div
         id="calendar-container"
-        className="relative p-4 bg-white border rounded-lg shadow-sm"
+        className={`relative p-4 bg-white border rounded-lg shadow-sm transition-all duration-500
+          ${calendarBlurred ? "scale-90 border-4 border-black" : "border border-gray-200"}`}
+        style={{
+          boxShadow: calendarBlurred ? "0 0 0 8px rgba(0,0,0,0.08)" : undefined,
+        }}
         tabIndex={0}
       >
         {calendarBlurred && (
