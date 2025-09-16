@@ -1,5 +1,5 @@
-import { FormEvent, useState } from "react";
 import { DateSelectArg } from "@fullcalendar/core";
+import { FormEvent, useState } from "react";
 
 interface CreateEventModalProps {
   selectInfo: DateSelectArg;
