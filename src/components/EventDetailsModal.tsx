@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { EventClickArg } from "@fullcalendar/core";
+import { useState } from "react";
 
 interface EventDetailsModalProps {
   event: EventClickArg;
